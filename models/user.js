@@ -28,7 +28,7 @@ class User {
     const updatedCartItems = [...this.cart.items];
     //spreading the cart items
     console.log(cartProductIndex, "grth>>>>>");
-    if (cartProductIndex) {
+    if (cartProductIndex >= 0) {
       console.log("dbhdufgh", updatedCartItems[cartProductIndex].quantity);
       newQuantity = updatedCartItems[cartProductIndex].quantity + 1;
       console.log(
@@ -80,11 +80,11 @@ class User {
       });
   }
   deleteCart(productId) {
-    console.log(this.cart.items,"delete")
+    console.log(this.cart.items, "delete");
     const updatedCartitems = this.cart.items.filter((item) => {
       return item.productId.toString() !== productId.toString();
     });
-    console.log(updatedCartitems,"delete",this)
+    console.log(updatedCartitems, "delete", this);
     const db = getdb();
     return db
       .collection("users")
@@ -92,6 +92,36 @@ class User {
         { _id: new ObjectId(this.id) },
         { $set: { cart: { items: updatedCartitems } } }
       );
+  }
+  addOrder() {
+    const db = getdb();
+    return this.getCart()
+      .then((products) => {
+        const order = {
+          items: products,
+          user: {
+            _id: new ObjectId(this.id),
+            name: this.name,
+          },
+        };
+        return db.collection("orders").insertOne(order);
+      })
+      .then((result) => {
+        this.cart = { items: [] };
+        return db
+          .collection("users")
+          .updateOne(
+            { _id: new ObjectId(this.id) },
+            { $set: { cart: { items: [] } } }
+          );
+      });
+  }
+  getOrders() {
+    const db = getdb();
+    return db
+      .collection("orders")
+      .find({ "user._id": new ObjectId(this.id) })
+      .toArray();
   }
   static findById(userId) {
     const db = getdb();
