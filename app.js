@@ -20,11 +20,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
-  User.findById('64c2abd01dc18c575279e304')
+   
+  User.findById('64c55bc5dc3fe5840bde6475')
     .then((user) => {
-        console.log(user,"fgjhf")  
-      req.user = user;
-      
+      console.log(user,"fgjhf")  
+      req.user =  new User(user.name,user.email,user.cart,user._id)
+      //req.user.save();
+      console.log(req.user)
       next();
     })
     .catch(err => console.log(err));
@@ -36,6 +38,6 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 mongoconnect(()=>{
-    //console.log(client);
+    
     app.listen(3000);
 })
